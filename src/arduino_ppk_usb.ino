@@ -310,7 +310,7 @@ void boot_keyboard()
   }
 
   delay(5);
-  
+
   if (PPK_DEBUG) Serial.println(" done");
 
   if (PPK_DEBUG) Serial.print("waiting for keyboard serial ID...");
@@ -332,7 +332,7 @@ void boot_keyboard()
   last_comm = millis();
 }
 
-void setup()  
+void setup()
 {
   if (PPK_DEBUG)
   {
