@@ -12,42 +12,19 @@
 
 // If this include causes an error Arduino, just comment it out
 #include <Keyboard.h>
-#include <SoftwareSerial.h>
-
-// set to 3 for III hardware, or 5 for V hardware
-#define PPK_VERSION 3
+//#include <HardwareSerial.h>
 
 // set to 1 to enable debug mode, which notes to the arduino console at 9600
-#define PPK_DEBUG 0
+#define PPK_DEBUG 1
 
-#if PPK_VERSION == 3
-#define VCC_PIN       2
-#define RX_PIN        8
-#define RTS_PIN       4
-#define DCD_PIN       5
-#define GND_PIN       6
-#endif
+#define VCC_PIN       6
+#define RTS_PIN       3
+#define DCD_PIN       2
 
-#if PPK_VERSION == 5
-#define VCC_PIN       7
-#define RX_PIN        8
-#define RTS_PIN       5
-#define DCD_PIN       4
-#define GND_PIN       2
-#endif
-
-#define PULLDOWN_PIN  15
 // set this to any unused pin
-#define TX_PIN        11
-
-#if (PPK_VERSION != 3) && (PPK_VERSION != 5)
-#error
-#error
-#error    you did not set your ppk version!
-#error    read the instructions or read the code!
-#error
-#error
-#endif
+//#define TX_PIN        11
+// using hardwaresrial so disabled?
+//#define RX_PIN        8
 
 // convenience masks
 #define UPDOWN_MASK 0b10000000
@@ -61,7 +38,8 @@
 // macro for testing if a char is printable ASCII
 #define PRINTABLE_CHAR(x) ((x >= 32) && (x <= 126))
 
-SoftwareSerial keyboard_serial(RX_PIN, TX_PIN, true); // RX, TX, inverted
+//HardwareSerial keyboard_serial(RX_PIN, TX_PIN, true); // RX, TX, inverted
+#define keyboard_serial Serial1
 
 char key_map[128] = { 0 };
 char fn_key_map[128] = { 0 };
@@ -264,26 +242,21 @@ void boot_keyboard()
   if (PPK_DEBUG)
   {
     // delay for a bit to allow for opening serial monitor etc.
-    for (int i = 0; i < 15; delay(1000 + i++)) Serial.print(".");
+    for (int i = 0; i < 3; delay(1000 + i++)) Serial.print(".");
 
     Serial.println("beginning keyboard boot sequence");
   }
 
   pinMode(VCC_PIN, OUTPUT);
-  pinMode(GND_PIN, OUTPUT);
-  pinMode(PULLDOWN_PIN, OUTPUT);
 
-  pinMode(RX_PIN, INPUT);
-  pinMode(DCD_PIN, INPUT);
+  pinMode(DCD_PIN, INPUT_PULLDOWN);
   pinMode(RTS_PIN, INPUT);
 
   digitalWrite(VCC_PIN, LOW);
-  digitalWrite(GND_PIN, LOW);
-  digitalWrite(PULLDOWN_PIN, LOW);
   digitalWrite(VCC_PIN, HIGH);
 
   keyboard_serial.begin(9600);
-  keyboard_serial.listen();
+  //keyboard_serial.listen();
 
   if (PPK_DEBUG) Serial.print("waiting for keyboard response...");
 
@@ -315,7 +288,7 @@ void boot_keyboard()
 
   if (PPK_DEBUG) Serial.print("waiting for keyboard serial ID...");
 
-  while (keyboard_serial.available() < 2) {;};
+  while (keyboard_serial.available() < 2) {;}
 
   if (PPK_DEBUG) Serial.println(" done");
 
@@ -337,8 +310,7 @@ void setup()
   if (PPK_DEBUG)
   {
     Serial.begin(9600);
-    Serial.print("compiled in debug mode with PPK_VERSION ");
-    Serial.println(PPK_VERSION);
+    Serial.print("running");
   }
 
   config_keymap();
